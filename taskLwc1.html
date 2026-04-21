@@ -1,0 +1,64 @@
+<template>
+    <lightning-card title="Task 1">
+
+        <template for:each={rows} for:item="it">
+            <div class="slds-grid slds-gutters" key={it.id}>
+                <!-- <div key={it.id} class="slds-grid slds-m-small_button"> -->
+                    
+                <div class="slds-col slds-size_1-of-7">
+                    <lightning-combobox label="Object"  placeholder="Select object"
+                        options={objectOptions} onchange={handleChange}>
+                    </lightning-combobox>
+                </div>
+
+                <div class="slds-col slds-size_1-of-7">
+                    <lightning-combobox label="Feild"  placeholder="Select Feild"
+                        options={feildOptions} onchange={handlFieldeChange}></lightning-combobox>
+                </div>
+
+                <div class="slds-col slds-size_1-of-7">
+                    <lightning-combobox label="Operator" value={selectedOperator} placeholder="Select Operator"
+                        options={operators} onchange={handleOperatorChange}></lightning-combobox>
+                </div>
+
+                <div class="slds-col slds-size_1-of-7">
+                    <lightning-input type="text" label="Values" 
+                        onchange={handleInputChange}></lightning-input>
+                </div>
+                <div class="slds-col slds-size_1-of-7">
+                    <lightning-input type="toggle" label="AND" variant="toggle" checked={isEnabled}
+                        onchange={handleToggle}>
+                    ></lightning-input>
+                </div>
+
+                <div class="slds-col slds-size_1-of-7">
+                    <lightning-button-icon icon-name="utility:add" alternative-text="Add" onclick={handleIncrement}
+                        id={it.id}>
+                    </lightning-button-icon>
+                    <!-- </div> -->
+
+                    <!-- <div class="slds-col slds-size_1-of-6"> -->
+                    <lightning-button-icon icon-name="utility:dash" alternative-text="Remove" onclick={handleDecrement}
+                        id={it.id}>
+                    </lightning-button-icon>
+                </div>
+            </div>
+            <!-- </div> -->
+        </template>
+        <!-- </div> -->
+        <div class="slds-grid slds-grid_align-center">
+            <div class="slds-m-horizontal_small slds-m-vertical_small">
+                <lightning-button variant="brand" label="Generate" onclick={handleGenerate}></lightning-button>
+            </div>
+
+            <div class="slds-m-horizontal_small slds-m-vertical_small">
+                <lightning-button variant="brand" label="Clear" onclick={handleClick}></lightning-button>
+            </div>
+        </div>
+    </lightning-card>
+    <!-- <lightning-card class="slds-card">
+        <div>
+            <lightning-datatable key-field="id" data={data} columns={columns}></lightning-datatable>
+        </div>
+    </lightning-card> -->
+</template>
