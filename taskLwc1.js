@@ -1,174 +1,218 @@
-import { LightningElement, wire, track } from 'lwc';
-import getAlllName from '@salesforce/apex/getAllNames.getAlllName';
-import helper from '@salesforce/apex/getAllNames.helper';
-// import displayData from '@salesforce/apex/getAllNames.displayData';
+import { LightningElement, track, wire } from 'lwc';
 
-export default class TaskLwc1 extends LightningElement {
-    @track objectOptions = [];
-    @track selObjectvalue = '';
-    @track feildOptions = [];
-    @track selFeildValue = '';
-    @track columns = [];
-    @track data = [];
-    userInput = '';
-    showData = false;
-    a = 1;
+import getObjects from '@salesforce/apex/getallObject.getObjects';
+import getFields from '@salesforce/apex/getallObject.getFields';
+import getRecords from '@salesforce/apex/getallObject.getRecords';
+
+export default class Task2 extends LightningElement {
+
+    // rows
     @track rows = [
         {
-            id: this.a,
-            feild: []
+            id: 1,
+            obj: '',
+            field: '',
+            op: '',
+            inp: '',
+            fieldOptions: []
         }
     ];
 
-    @track operators = [
+    counter = 1;
+
+    // object dropdown
+    @track objectOptions = [];
+
+    // table
+    @track data = [];
+    @track columns = [];
+    showData = false;
+
+    // operator dropdown
+    operators = [
         { label: 'Equals', value: 'equals' },
-        { label: 'Greater', value: 'greater' },
-        { label: 'Less', value: 'less' },
+        { label: 'Greater Than', value: 'greater' },
+        { label: 'Less Than', value: 'less' },
         { label: 'Contains', value: 'contains' }
     ];
 
-    selected = [
-        { id: this.a, obj: '', feild: '', op: '', inp: '' }
-    ];
-    @wire(getAlllName)
+    // load all objects
+    @wire(getObjects)
     wiredObjects({ data, error }) {
         if (data) {
-            this.objectOptions = Object.keys(data).map(api => ({
-                label : data[api],
-                value : api
-            }));
+            this.objectOptions = data.map(item => {
+                return {
+                    label: item,
+                    value: item
+                };
+            });
+        } else if (error) {
+            console.log(error);
         }
     }
-//     @wire(getAlllName)
-// wiredObjects({ data, error }) {
-//     if (data) {
-//         this.objectOptions = Object.keys(data).map(api => ({
-//             label: data[api],
-//             value: api
-//         }));
-//     }
-// }
 
-    handleChange(event) {
-        // let id = Number((event.target.id).split('-')[0]);
-        let id = Number(event.currentTarget.dataset.id);
-        this.selected.forEach(row => {
-            if (row.id === id) {
-                row.obj = event.detail.value;
+    // object change
+    handleObjectChange(event) {
+
+        const rowId = Number(event.currentTarget.dataset.id);
+        const value = event.detail.value;
+
+        this.rows = this.rows.map(row => {
+            if (row.id === rowId) {
+                return {
+                    ...row,
+                    obj: value,
+                    field: '',
+                    op: '',
+                    inp: '',
+                    fieldOptions: []
+                };
             }
-        })
-        console.log(id);
-        this.selObjectvalue = event.detail.value;
-        helper({ allObjectName: this.selObjectvalue })
+            return row;
+        });
+
+        getFields({ objectName: value })
             .then(result => {
-                this.feildOptions = result.map(field => ({
-                    label: field, value: field
-                }));
-                this.rows.forEach(row => {
-                    if (row.id === id) {
-                        row.feild = this.feildOptions;
-                    }
+
+                const options = result.map(item => {
+                    return {
+                        label: item,
+                        value: item
+                    };
                 });
+
+                this.rows = this.rows.map(row => {
+                    if (row.id === rowId) {
+                        return {
+                            ...row,
+                            fieldOptions: options
+                        };
+                    }
+                    return row;
+                });
+
             })
             .catch(error => {
                 console.log(error);
             });
     }
-    handlFieldeChange(event) {
-        // this.selFeildValue = event.detail.value;
-        let id = Number(event.currentTarget.dataset.id);
-        // this.selected.forEach(row => {
-        //     if (row.id === id) {
-        //         row.feild = event.detail.value;
-        //     }
-        // })
-        // let value = event.detail.value;
-        // this.selected.map()
 
-        // console.log('Row ID:', id);
-        // console.log('Selected Field:', value);
+    // field change
+    handleFieldChange(event) {
 
-        // this.rows.forEach(row => {
-        //     if (row.id === id) {
-        //         row.selectedField = value;
-        //     }
-        // });
+        const rowId = Number(event.currentTarget.dataset.id);
+        const value = event.detail.value;
 
-        let value = event.detail.value;
-
-        this.selected.forEach(row => {
-            if (row.id === id) {
-                row.field = value;
+        this.rows = this.rows.map(row => {
+            if (row.id === rowId) {
+                return { ...row, field: value };
             }
+            return row;
         });
+    }
 
-        this.selected = [...this.selected];
-    }
+    // operator change
     handleOperatorChange(event) {
-        // let id = Number(event.target.id.split('-')[0]);
-        let id = Number(event.currentTarget.dataset.id);
-        this.selected.forEach(row => {
-            if (row.id === id) {
-                row.op = event.detail.value;
+
+        const rowId = Number(event.currentTarget.dataset.id);
+        const value = event.detail.value;
+
+        this.rows = this.rows.map(row => {
+            if (row.id === rowId) {
+                return { ...row, op: value };
             }
-        })
-        this.selectedOperator = event.detail.value;
+            return row;
+        });
     }
+
+    // input change
     handleInputChange(event) {
-        this.userInput = event.target.value;
-        // let id = Number(event.target.id.split('-')[0]);
-        let id = Number(event.currentTarget.dataset.id);
-        this.selected.forEach(row => {
-            if (row.id === id) {
-                row.inp = event.target.value;
+
+        const rowId = Number(event.currentTarget.dataset.id);
+        const value = event.target.value;
+
+        this.rows = this.rows.map(row => {
+            if (row.id === rowId) {
+                return { ...row, inp: value };
             }
-        })
-        // console.log(this.userInput);
+            return row;
+        });
     }
+
+    // add row
     handleIncrement() {
-        this.a += 1;
-        this.rows.push({ id: this.a, feild: [{}] });
+
+        this.counter++;
+
+        this.rows = [
+            ...this.rows,
+            {
+                id: this.counter,
+                obj: '',
+                field: '',
+                op: '',
+                inp: '',
+                fieldOptions: []
+            }
+        ];
     }
+
+    // delete row
     handleDecrement(event) {
-        let delId = Number(event.currentTarget.dataset.id);
-        if (delId == 1) {
+
+        const rowId = Number(event.currentTarget.dataset.id);
+
+        if (this.rows.length === 1) {
             return;
         }
 
-        this.rows = [...this.rows].filter(del => del.id != delId);
+        this.rows = this.rows.filter(row => row.id !== rowId);
     }
 
-    handleToggle() {
-        //     if (IsActive) {
-        // console.log(this.selObjectvalue);
-        // console.log(this.selFeildValue);
-        // console.log(this.selectedOperator);
-        // console.log(this.userInput);
-
-        //         if (this.selFeildValue) {
-
-        //         }
-        //     }
-    }
-
-    columns = [
-        { label: 'Id', fieldName: 'id' },
-        { label: 'Object', fieldName: 'objectName' },
-        { label: 'Feild', fieldName: 'FieldName' }
-    ];
-    buildTableData() {
-        this.data = this.selected.map(row => {
-            return {
-                id: row.id,
-                objectName: row.obj,
-                fieldName: row.feild || row.field
-            };
-        });
-    }
-
+    // generate data (first row only)
     handleGenerate() {
-        this.buildTableData();
-        this.showData = true;
 
+        const firstRow = this.rows[0];
+
+        if (!firstRow.obj || !firstRow.field || !firstRow.op || !firstRow.inp) {
+            return;
+        }
+
+        getRecords({
+            objectName: firstRow.obj,
+            fieldName: firstRow.field,
+            operator: firstRow.op,
+            value: firstRow.inp
+        })
+            .then(result => {
+
+                this.data = result.data;
+                this.columns = result.columns;
+                this.showData = true;
+
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    // clear all
+    handleClear() {
+
+        this.rows = [
+            {
+                id: 1,
+                obj: '',
+                field: '',
+                op: '',
+                inp: '',
+                fieldOptions: []
+            }
+        ];
+
+        this.counter = 1;
+        this.data = [];
+        this.columns = [];
+        this.showData = false;
     }
 }
