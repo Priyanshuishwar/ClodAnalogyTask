@@ -1,5 +1,4 @@
 public with sharing class getallObject {
-
     @AuraEnabled(cacheable=true)
     public static List<String> getObjects() {
         List<String> objs = new List<String>(Schema.getGlobalDescribe().keySet());
